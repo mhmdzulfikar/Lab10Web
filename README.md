@@ -56,6 +56,8 @@ $b->gantiWarna("Hijau");
 $b->tampilWarna();
 ?>
 ```
+Class & Object: Digunakan untuk merepresentasikan entitas mobil. Encapsulation: Atribut seperti warna, merek, dan harga dibuat privat agar tidak dapat diakses langsung. Constructor: Berfungsi untuk memberikan nilai awal secara otomatis saat objek dibuat. Method: Digunakan untuk memodifikasi dan menampilkan data.
+
 
 ---
 
@@ -96,7 +98,7 @@ class Form {
 }
 ?>
 ```
-
+tidak muncul file apapun karena filenya belum terisi
 ---
 
 ### File: `form_input.php`
@@ -117,7 +119,7 @@ $form->displayForm();
 echo "</body></html>";
 ?>
 ```
-
+Kode tersebut merupakan implementasi dari class Form yang berfungsi untuk membuat formulir input sederhana. Program ini menggunakan class Form yang telah didefinisikan sebelumnya dalam file form.php.
 ---
 
 ### File: `database.php`
@@ -182,6 +184,7 @@ class Database {
 }
 ?>
 ```
+File database masih kosong karena belum ada data di dalamnya, sehingga perlu membuat tabel terlebih dahulu, serta menyiapkan file config.php dan test.php.
 
 ---
 
@@ -193,6 +196,8 @@ CREATE TABLE mahasiswa (
     alamat TEXT
 );
 ```
+Setelah membuat tabel users di database latihan1, langkah selanjutnya adalah membuka VSCode dan membuat file baru dengan nama config.php.
+
 
 ---
 
@@ -207,22 +212,79 @@ $config = [
 ];
 ?>
 ```
-
+berfungsi untuk menyimpan informasi konfigurasi koneksi database.
 ---
 
 ### File: `test.php
 ```php
 <?php
-include "database.php";
+class Database {
+    protected $host;
+    protected $user;
+    protected $password;
+    protected $db_name;
+    protected $conn;
 
-$db = new Database();
+    public function __construct() {
+        $this->getConfig();
+        $this->conn = new mysqli($this->host, $this->user, $this->password, $this->db_name);
 
-// Test insert
-$data = ['nim' => '12345', 'nama' => 'John Doe', 'alamat' => 'Jl. Merdeka'];
-$db->insert('mahasiswa', $data);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
 
-// Test select
-$result = $db->get('mahasiswa', "nim='12345'");
-print_r($result);
+    private function getConfig() {
+        include_once("config.php");
+        global $config;
+
+        $this->host = $config['host'];
+        $this->user = $config['username'];
+        $this->password = $config['password'];
+        $this->db_name = $config['db_name'];
+    }
+
+    public function query($sql) {
+        return $this->conn->query($sql);
+    }
+
+    public function get($table, $where = null) {
+        $condition = $where ? " WHERE " . $where : "";
+        $sql = "SELECT * FROM " . $table . $condition;
+        $result = $this->conn->query($sql);
+        return $result ? $result->fetch_assoc() : null;
+    }
+
+    public function insert($table, $data) {
+        if (is_array($data)) {
+            $columns = implode(",", array_keys($data));
+            $values = implode(",", array_map(fn($val) => "'{$val}'", $data));
+        }
+
+        $sql = "INSERT INTO " . $table . " (" . $columns . ") VALUES (" . $values . ")";
+        $result = $this->conn->query($sql);
+        return $result ? true : false;
+    }
+
+    public function update($table, $data, $where) {
+        if (is_array($data)) {
+            $update_values = implode(",", array_map(fn($key, $val) => "$key='{$val}'", array_keys($data), $data));
+        }
+
+        $sql = "UPDATE " . $table . " SET " . $update_values . " WHERE " . $where;
+        $result = $this->conn->query($sql);
+        return $result ? true : false;
+    }
+
+    public function delete($table, $filter) {
+        $sql = "DELETE FROM " . $table . " " . $filter;
+        $result = $this->conn->query($sql);
+        return $result ? true : false;
+    }
+}
 ?>
+
 ```
+---
+
+---
