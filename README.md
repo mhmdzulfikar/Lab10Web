@@ -286,5 +286,6 @@ class Database {
 
 ```
 ---
+file database masih kosong karena belum terisi, maka membuat dulu tablenya dan config.php dan test.php
 
 ---
